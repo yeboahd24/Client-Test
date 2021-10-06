@@ -1,1 +1,1 @@
-# Django-Training
+# Django with Docker
