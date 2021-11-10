@@ -1,0 +1,29 @@
+{% extends 'app/base.html' %}
+
+{% block body %} 
+
+<table  class="table table-bordered">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Title</th>
+            <th>Description</th>
+        </tr>
+        </thead>
+
+        <tbody>
+    {% for ticket in tickets %}
+        <tr>
+            <td><a href="">{{ ticket.id }}</a></td>
+            <td>{{ ticket.status }}</td>
+            <td>{{ ticket.created_by }}</td>
+            <td>{{ ticket.ticket_title }}</td>
+            <td>{{ ticket.ticket_description }}</td>
+            <td><a href="{% url 'accept_tickets' pk=ticket.id %}"> Accept</a>
+        </tr>
+    {% endfor %}
+    </tbody></table>
+
+{% endblock %}

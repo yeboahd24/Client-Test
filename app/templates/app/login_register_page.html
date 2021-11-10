@@ -1,0 +1,11 @@
+{% extends 'app/base.html' %}
+
+{% block body %}
+
+ <a class="btn btn-primary btn-lg" href="{% url "developer_register" %}" role="button">Developer Signup</a>
+<a class="btn btn-primary btn-lg" href="{% url "manager_register" %}" role="button">Manager Signup</a>
+ <a class="btn btn-primary btn-lg" href="{% url "developer_login" %}" role="button">Developer Signin</a>
+<a class="btn btn-primary btn-lg" href="{% url "manager_login" %}" role="button">Manager Signin</a>
+
+
+{% endblock %}

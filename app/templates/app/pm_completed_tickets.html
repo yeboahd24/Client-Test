@@ -1,0 +1,32 @@
+
+{% extends 'app/base.html' %}
+
+{% block body %}
+
+<table  class="table table-bordered">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Status</th>
+            <th>accepted by</th>
+            <th>Title</th>
+            <th>Description</th>
+        </tr>
+        </thead>
+
+        <tbody>
+    {% for ticket in tickets %}
+        <tr>
+            <td><a href="">{{ ticket.id }}</a></td>
+            <td>{{ ticket.status }}</td>
+            <td>{{ ticket.accepted_by }}</td>
+            <td>{{ ticket.ticket_title }}</td>
+            <td>{{ ticket.ticket_description }}</td>
+            <td><a href="{% url 'pm_close_ticket' pk=ticket.id%}">Close</a></td>
+        </tr>
+        
+    {% endfor %}
+    </tbody></table>
+
+{% endblock %}
+

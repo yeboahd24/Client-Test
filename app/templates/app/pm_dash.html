@@ -1,0 +1,21 @@
+{% extends 'app/base.html' %}
+
+{% block body %}
+
+{% if user.is_authenticated%}
+<h1> Project Manager's Dashboard <h1>
+<a href="{% url 'ticket_view' %}">Create a Ticket</a> <br>
+ <a href="{% url 'pm_open_tickets' %}">Check Open Tickets</a> <br>
+ <a href="{% url 'pm_accepted_tickets_view' %}">Check Accepted Tickets</a> <br>
+ <a href="{% url 'pm_completed_tickets_view' %}">Check Completed Tickets</a> <br>
+ <a href="{% url 'pm_closed_tickets_view' %}">Check Closed Tickets</a> <br>
+
+<a href="{% url 'logout_view' %}">Logout</a>
+ 
+{% else %}
+<a href="{% url 'manager_register' %}">Manager Register</a> <br>
+<a href="{% url 'manager_login' %}">Login</a> 
+{% endif %}
+
+{% endblock %}
+

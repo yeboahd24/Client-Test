@@ -1,0 +1,19 @@
+{% extends 'app/base.html' %}
+
+{% block body %}
+{% if user.is_authenticated%}
+<h1> Developer's Dashboard<h1>
+ <a href="{% url 'open_tickets' %}">Check Open Tickets</a> <br> 
+ <a href="{% url 'accepted_tickets_view' %}">Check Accepted Tickets</a> <br> 
+ <a href="{% url 'completed_tickets_view' %}">Check Completed Tickets</a> <br> 
+ <a href="{% url 'dev_closed_tickets' %}">Check Closed Tickets</a> <br> 
+
+<a href="{% url 'logout_view' %}">Logout</a>
+
+
+{% else %}
+<a href="{% url 'devloper_register' %}">Developer Register</a> <br>
+<a href="{% url 'developer_login' %}">Login</a> 
+{% endif %}
+
+{% endblock %}

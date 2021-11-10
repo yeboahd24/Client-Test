@@ -1,0 +1,22 @@
+{% extends 'app/base.html' %}
+{% load widget_tweaks %}
+{% block body %} 
+<h1><b> Developer Login <b></h1>
+<form action="{% url 'developer_login' %}" method="POST" >
+                      {% csrf_token %}
+                         {% for field in form.visible_fields %}
+                           <div class="form-group">
+                               {{ field.label_tag }}
+                                  {% render_field field class="form-control" %}
+                                    {% if messages%}
+                                      {% for message in messages %}
+                                        <span style="color:red">{{ message }}</span>
+                                      {% endfor %}
+                                     {% endif %}
+                         {% endfor %}
+                         <br>
+                             <input type="submit" value="Signin" class="btn btn-block btn-primary">
+                           </div>
+                    </form>
+
+{% endblock %}
