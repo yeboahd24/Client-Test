@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 import datetime
 from django.views.generic import CreateView
-from django.views.generic.base import TemplateView
+from django.views.generic.base import TemplateView, View
 from .forms import DeveloperSignupForm,ProjectManagerSignupForm,TicketCreateForm
 from django.contrib.auth.forms import AuthenticationForm
 from .models import Developer, User,Ticket
@@ -67,27 +67,28 @@ def manager_login(request):
 
 class Manager_Login(TemplateView):
     template_name = 'app/pm_login.html'
-    def get(self,request):
-        form = AuthenticationForm()
-        return render(request,self.template_name,{'form':form})
+    
+    def dispatch(self, request, *args, **kwargs) -> HttpResponse:
+        if request.method == 'POST':
+            form = AuthenticationForm(request, data=request.POST)
+            if form.is_valid():
+                username = form.cleaned_data.get('username')
+                password = form.cleaned_data.get('password')
+                user = authenticate(username=username, password=password)
+                if user is not None:
+                    if user.is_manager:
+                        login(request, user)
+                        return redirect(reverse('pm_dashboard'))
+                    else:
+                        messages.error(request, "Invalid Username or Password")
+                else:
+                    messages.error(request, "Invalid Username or Password")
+                              
+        return render(request, self.template_name, context={'form': AuthenticationForm()})
+            
+            
 
-    def post(self,request):
-        current = User.objects.filter(is_manager = True)
-        form = AuthenticationForm(request.POST)
-        if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-            user = authenticate(username=username,password=password)
-
-            if user is not None:
-                if user in current:
-                    login(request,user)
-                    return redirect(reverse('pm_dashboard'))
-            else:
-                messages.error(request,"Invalid Username or Password")
-        else:
-                messages.error(request,"Invalid Username or Password")
-        return render(request,self.template_name,{'form':form})
+    
     
     
 
@@ -254,7 +255,7 @@ class Mark_Complete_Ticket(LoginRequiredMixin,TemplateView):
         if ticket.status == 'Accepted' and ticket.accepted_by == request.user:
             ticket.status = 'Completed'
             ticket.save()
-        return render(request,self.template_name)
+            return render(request,self.template_name)
 
 
 @login_required
