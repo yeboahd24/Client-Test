@@ -196,6 +196,13 @@ def open_tickets_view(request):
     return render(request,'app/open_tickets.html',{"tickets": tickets_open})
 
 
+class Open_Tickets(LoginRequiredMixin, TemplateView):
+    template_name = 'app/open_tickets.html'
+    def get(self,request):
+        tickets_open = Ticket.objects.filter(status = 'Opened') 
+        return render(request,self.template_name,{"tickets": tickets_open})
+
+
 @login_required
 def accept_tickets_view(request,pk):
     ticket = Ticket.objects.get(id=pk)
@@ -223,6 +230,12 @@ def dev_accepted_ticket(request):
     return render(request,'app/dev_accepted_ticket.html',{"tickets": ticket_complete})
 
 
+class Dev_Accepted_Ticket(LoginRequiredMixin,TemplateView):
+    template_name = 'app/dev_accepted_ticket.html'
+    def get(self,request):
+        ticket_complete = Ticket.objects.filter(status = 'Accepted',accepted_by = request.user)
+        return render(request,self.template_name,{"tickets": ticket_complete})
+
 
 @login_required
 def mark_complete_tickets_view(request,pk):
@@ -234,10 +247,27 @@ def mark_complete_tickets_view(request,pk):
 
 
 
+class Mark_Complete_Ticket(LoginRequiredMixin,TemplateView):
+    template_name = 'app/mark_complete_ticket.html'
+    def get(self,request,pk):
+        ticket = Ticket.objects.get(id=pk)
+        if ticket.status == 'Accepted' and ticket.accepted_by == request.user:
+            ticket.status = 'Completed'
+            ticket.save()
+        return render(request,self.template_name)
+
+
 @login_required
 def dev_completed_ticket(request):
     tickets_completed = Ticket.objects.filter(status = 'Completed',accepted_by = request.user)
     return render(request,'app/dev_complete_ticket.html',{'tickets':tickets_completed})
+
+
+class Dev_Completed_Ticket(LoginRequiredMixin,TemplateView):
+    template_name = 'app/dev_complete_ticket.html'
+    def get(self,request):
+        tickets_completed = Ticket.objects.filter(status = 'Completed',accepted_by = request.user)
+        return render(request,self.template_name,{'tickets':tickets_completed})
 
 
 @login_required
@@ -246,10 +276,23 @@ def dev_closed_tickets_view(request):
     return render(request,'app/dev_closed_tickets.html',{'tickets':tickets_closed})
 
 
+class Dev_Closed_Ticket(LoginRequiredMixin,TemplateView):
+    template_name = 'app/dev_closed_tickets.html'
+    def get(self,request):
+        tickets_closed = Ticket.objects.filter(status='Closed',accepted_by = request.user)
+        return render(request,self.template_name,{'tickets':tickets_closed})
+
+
 @login_required
 def pm_open_tickets_view(request):
     tickets_open = Ticket.objects.filter(status = 'Opened',created_by = request.user) 
     return render(request,'app/pm_open_tickets.html',{"tickets": tickets_open})
+
+class Pm_open_Tickets_View(LoginRequiredMixin,TemplateView):
+    template_name = 'app/pm_open_tickets.html'
+    def get(self,request):
+        tickets_open = Ticket.objects.filter(status = 'Opened',created_by = request.user) 
+        return render(request,self.template_name,{'tickets': tickets_open})
 
 
 @login_required
@@ -258,10 +301,23 @@ def pm_accepted_tickets(request):
     return render(request,'app/pm_accepted_tickets.html',{"tickets": ticket_complete})
 
 
+class Pm_accepted_Tickets(LoginRequiredMixin,TemplateView):
+    template_name = 'app/pm_accepted_tickets.html'
+    def get(self,request):
+        ticket = Ticket.objects.filter(status = 'Accepted',created_by = request.user)
+        return render(request,self.template_name,{'tickets':ticket})
+
+
 @login_required
 def pm_completed_tickets(request):
     tickets_completed = Ticket.objects.filter(status = 'Completed',created_by = request.user)
     return render(request,'app/pm_completed_tickets.html',{"tickets": tickets_completed})
+
+class Pm_Complated_Tickets(LoginRequiredMixin,TemplateView):
+    template_name = 'app/pm_completed_tickets.html'
+    def get(self,request):
+        tickets_completed = Ticket.objects.filter(status = 'Completed',created_by = request.user)
+        return render(request,self.template_name,{'tickets':tickets_completed})
 
 
 @login_required
@@ -274,10 +330,28 @@ def pm_close_tickets(request,pk):
     return redirect(reverse("pm_completed_tickets_view"))
 
 
+class Pm_close_Tickets(LoginRequiredMixin,TemplateView):
+    template_name = 'app/pm_close_ticket.html'
+    def get(self,request,pk):
+        ticket = Ticket.objects.get(id=pk)
+        if ticket.status == 'Completed' and ticket.created_by == request.user:
+            ticket.status = 'Closed'
+            ticket.closed_date = datetime.datetime.now()
+            ticket.save()
+        return render(request,self.template_name)
+
+
 @login_required
 def pm_closed_tickets(request):
     tickets_closed = Ticket.objects.filter(status = 'Closed',created_by = request.user)
     return render(request,'app/pm_closed_tickets.html',{"tickets": tickets_closed})
+
+
+class Pm_Closed_Tickets(LoginRequiredMixin,TemplateView):
+    template_name = 'app/pm_closed_tickets.html'
+    def get(self,request):
+        tickets_closed = Ticket.objects.filter(status = 'Closed',created_by = request.user)
+        return render(request,self.template_name,{'tickets':tickets_closed})
 
 
 @login_required
@@ -289,3 +363,15 @@ def logout_view(request):
     else:
         logout(request)
         return redirect(reverse('manager_login'))
+
+
+class Logout_View(LoginRequiredMixin,TemplateView):
+    template_name = 'app/logout.html'
+    def get(self,request):
+        current = User.objects.filter(is_developer = True)
+        if request.user in current:
+            logout(request)
+            return redirect(reverse('developer_login'))
+        else:
+            logout(request)
+            return redirect(reverse('manager_login'))
