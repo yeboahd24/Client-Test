@@ -9,9 +9,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 import datetime
 from django.views.generic import CreateView
+from django.views.generic.base import TemplateView
 from .forms import DeveloperSignupForm,ProjectManagerSignupForm,TicketCreateForm
 from django.contrib.auth.forms import AuthenticationForm
 from .models import Developer, User,Ticket
+from django.contrib.auth.mixins import LoginRequiredMixin
+
 
 # Create your views here.
 def index(request):
@@ -62,6 +65,33 @@ def manager_login(request):
     return render(request, 'app/pm_login.html',context={'form':AuthenticationForm(),})
 
 
+class Manager_Login(TemplateView):
+    template_name = 'app/pm_login.html'
+    def get(self,request):
+        form = AuthenticationForm()
+        return render(request,self.template_name,{'form':form})
+
+    def post(self,request):
+        current = User.objects.filter(is_manager = True)
+        form = AuthenticationForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username,password=password)
+
+            if user is not None:
+                if user in current:
+                    login(request,user)
+                    return redirect(reverse('pm_dashboard'))
+            else:
+                messages.error(request,"Invalid Username or Password")
+        else:
+                messages.error(request,"Invalid Username or Password")
+        return render(request,self.template_name,{'form':form})
+    
+    
+
+    
 @login_required
 def pm_dashboard(request):
     return render(request,'app/pm_dash.html')
@@ -91,6 +121,31 @@ def developer_login(request):
     return render(request, 'app/dev_login.html',context={'form':AuthenticationForm(),})
 
 
+class Developer_Login(TemplateView):
+    template_name = 'app/dev_login.html'
+    def get(self,request):
+        form = AuthenticationForm()
+        return render(request,self.template_name,{'form':form})
+
+    def post(self,request):
+        current = User.objects.filter(is_developer = True)
+        form = AuthenticationForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username,password=password)
+
+            if user is not None:
+                if user in current:
+                    login(request,user)
+                    return redirect(reverse('dev_dashboard'))
+            else:
+                messages.error(request,"Invalid Username or Password")
+        else:
+                messages.error(request,"Invalid Username or Password")
+        return render(request,self.template_name,{'form':form})
+
+
 @login_required
 def dev_dashboard(request):
     return render(request,'app/dev_dash.html')
@@ -115,6 +170,26 @@ def ticket_create_view(request):
 
     return render(request,'app/create_ticket.html',{'form': form,})
 
+
+class Ticket_Create(LoginRequiredMixin, TemplateView):
+    template_name = 'app/create_ticket.html'
+    def get(self,request):
+        form = TicketCreateForm()
+        return render(request,self.template_name,{'form':form})
+    
+    def post(self,request):
+        form = TicketCreateForm(request.POST)
+        if form.is_valid():
+            obj = form.save()
+            obj.created_by = request.user
+            obj.status = "Opened"
+            obj.save()
+
+            return HttpResponseRedirect(reverse('pm_open_tickets'))
+        else:
+            return render(request,self.template_name,{'form':form})
+
+
 @login_required
 def open_tickets_view(request):
     tickets_open = Ticket.objects.filter(status = 'Opened') 
@@ -130,6 +205,17 @@ def accept_tickets_view(request,pk):
         ticket.save()
     return redirect(reverse('open_tickets'))
 
+
+
+class Accept_Ticket(LoginRequiredMixin,TemplateView):
+    template_name = 'app/accept_ticket.html'
+    def get(self,request,pk):
+        ticket = Ticket.objects.get(id=pk)
+        if ticket.status == 'Opened':
+            ticket.status = 'Accepted'
+            ticket.accepted_by = request.user
+            ticket.save()
+        return render(request,self.template_name)
 
 @login_required
 def dev_accepted_ticket(request):
